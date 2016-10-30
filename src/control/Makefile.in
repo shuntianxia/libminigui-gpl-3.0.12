@@ -52,7 +52,7 @@ am__objects_1 = ctrlmisc.lo static.lo button.lo edit.lo listbox.lo \
 	progressbar.lo menubutton.lo trackbar.lo combobox.lo \
 	propsheet.lo newtoolbar.lo scrolled.lo scrollwnd.lo \
 	scrollview.lo textedit.lo listmodel.lo scrollbar.lo \
-	bidiedit.lo
+	bidiedit.lo wheelview.lo mspeedmeter.lo slid_controller.lo
 am_libcontrol_la_OBJECTS = $(am__objects_1)
 libcontrol_la_OBJECTS = $(am_libcontrol_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -201,7 +201,8 @@ SRC_FILES = ctrlmisc.c \
               static.c button.c edit.c listbox.c progressbar.c \
               menubutton.c trackbar.c combobox.c propsheet.c \
               newtoolbar.c scrolled.c scrollwnd.c scrollview.c \
-			  textedit.c listmodel.c scrollbar.c bidiedit.c
+			  textedit.c listmodel.c scrollbar.c bidiedit.c \
+			  wheelview.c mspeedmeter.c slid_controller.c
 
 libcontrol_la_SOURCES = $(SRC_FILES) 
 EXTRA_DIST = makefile.ng makefile.msvc \
@@ -209,7 +210,8 @@ EXTRA_DIST = makefile.ng makefile.msvc \
 		medit_impl.h bidiedit_impl.h \
         progressbar_impl.h static_impl.h menubutton_impl.h trackbar_impl.h \
         combobox_impl.h propsheet_impl.h newtoolbar_impl.h scrolled.h \
-        scrollwnd.h scrollview_impl.h textedit_impl.h text.h listmodel.h 
+        scrollwnd.h scrollview_impl.h textedit_impl.h text.h listmodel.h \
+		wheelview.h mspeedmeter.h slid_controller.h
 
 LIB_NAME = libcontrol
 all: all-am
@@ -282,6 +284,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/static.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/textedit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trackbar.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wheelview.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mspeedmeter.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/slid_controller.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

@@ -199,7 +199,8 @@ void * __mg_init_png(MG_RWops * fp, MYBITMAP * mybmp, RGB * pal)
 #ifdef WIN32
         assert(0); /* XXX: */
 #else
-        png_set_gray_1_2_4_to_8(*png_ptr);
+        //png_set_gray_1_2_4_to_8(*png_ptr);
+        png_set_expand_gray_1_2_4_to_8(*png_ptr);
 #endif
 	}
 

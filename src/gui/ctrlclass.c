@@ -65,6 +65,11 @@ extern BOOL RegisterPropSheetControl (void);
 extern BOOL RegisterScrollViewControl (void);
 extern BOOL RegisterScrollWndControl (void);
 #endif
+#define _MGCTRL_WHEELVIEW 
+#ifdef _MGCTRL_WHEELVIEW
+extern BOOL RegisterWheelViewControl (void);
+//extern BOOL RegisterScrollWndControl (void);
+#endif
 #ifdef _MGCTRL_TEXTEDIT
 extern BOOL RegisterTextEditControl (void);
 #endif
@@ -193,6 +198,13 @@ BOOL mg_InitControlClass ()
         return FALSE;
     if (!RegisterScrollWndControl ())
         return FALSE;
+#endif
+
+#ifdef _MGCTRL_WHEELVIEW
+    if (!RegisterWheelViewControl ())
+        return FALSE;
+    //if (!RegisterScrollWndControl ())
+      //  return FALSE;
 #endif
 
 #ifdef _MGCTRL_TEXTEDIT

@@ -6,7 +6,8 @@ SRC_FILES = ctrlmisc.c \
               static.c button.c edit.c listbox.c progressbar.c \
               menubutton.c trackbar.c combobox.c propsheet.c \
               newtoolbar.c scrolled.c scrollwnd.c scrollview.c \
-			  textedit.c listmodel.c scrollbar.c bidiedit.c
+			  textedit.c listmodel.c scrollbar.c bidiedit.c \
+			  wheelview.c mspeedmeter.c slid_controller.c 
 
 libcontrol_la_SOURCES = $(SRC_FILES) 
 
@@ -15,6 +16,7 @@ EXTRA_DIST=makefile.ng makefile.msvc \
 		medit_impl.h bidiedit_impl.h \
         progressbar_impl.h static_impl.h menubutton_impl.h trackbar_impl.h \
         combobox_impl.h propsheet_impl.h newtoolbar_impl.h scrolled.h \
-        scrollwnd.h scrollview_impl.h textedit_impl.h text.h listmodel.h 
+        scrollwnd.h scrollview_impl.h textedit_impl.h text.h listmodel.h \
+        wheelview.h mspeedmeter.h slid_controller.h
 
 LIB_NAME=libcontrol

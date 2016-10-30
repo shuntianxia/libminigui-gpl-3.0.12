@@ -8,6 +8,8 @@
 
 #ifndef _SCROLLED_H
 #define _SCROLLED_H
+#include "slid_view.h"
+#include "slid_controller.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -50,6 +52,10 @@ typedef struct _scrdata
     SBPolicyType sbPolicy;
 
     void (*move_content) (HWND, struct _scrdata *, BOOL);
+    /* added by learningx */
+    SlidController *controller;
+    SlidView  view;
+        
 
 } SCRDATA;
 typedef SCRDATA *PSCRDATA;

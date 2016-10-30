@@ -321,7 +321,9 @@ static int wait_event (int which, int maxfd, fd_set *in, fd_set *out, fd_set *ex
 #ifndef _MGRM_THREADS
     e = select (maxfd + 1, in, out, except, timeout) ;
 #else
-    e = select (MAX (mouse_fd, kbd_fd) + 1, in, out, except, timeout) ;
+    //e = select (MAX (mouse_fd, kbd_fd) + 1, in, out, except, timeout) ;
+     FD_ZERO (out); /*do not use wfds */
+    e = select (MAX (mouse_fd, kbd_fd) + 1, in, NULL, except, timeout) ;
 #endif
 
     if (e > 0) { 

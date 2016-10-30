@@ -22,6 +22,7 @@ libminiguiinclude_HEADERS= \
 	gridview.h \
 	iconview.h \
 	animation.h \
-	scrollbar.h
+	scrollbar.h \
+	wheelview.h
 
 EXTRA_DIST=makefile.ng makefile.msvc

@@ -166,7 +166,7 @@ static int EVENT_Read(unsigned char *buf, int *modifiers)
             *buf = 0x80;
         }
         *buf |= (unsigned char)(buftmp.code & 0x007f);
-        // printf("keyboard: value=%d,code=%d,*buf=0x%08x\n",buftmp.value, buftmp.code, *buf);
+        fprintf(stderr,"keyboard: value=%d,code=%d,*buf=0x%08x\n",buftmp.value, buftmp.code, *buf);
         return 1;
     }else{
         return 0;

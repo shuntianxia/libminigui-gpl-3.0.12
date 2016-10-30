@@ -554,10 +554,25 @@ static GAL_Surface *FB_SetVideoMode(_THIS, GAL_Surface *current,
         vinfo.yres_virtual = height;
         vinfo.xoffset = 0;
         vinfo.yoffset = 0;
-        vinfo.red.length = vinfo.red.offset = 0;
-        vinfo.green.length = vinfo.green.offset = 0;
-        vinfo.blue.length = vinfo.blue.offset = 0;
-        vinfo.transp.length = vinfo.transp.offset = 0;
+       // vinfo.red.length = vinfo.red.offset = 0;
+        //vinfo.green.length = vinfo.green.offset = 0;
+        //vinfo.blue.length = vinfo.blue.offset = 0;
+        //vinfo.transp.length = vinfo.transp.offset = 0;
+	if (32 == bpp) {
+		vinfo.red.length = 0;
+		vinfo.green.length = 0;
+		vinfo.blue.length = 0;
+		vinfo.transp.length = 0;
+		vinfo.red.offset = 16 ;
+		vinfo.green.offset = 8;
+		vinfo.blue.offset = 0;
+	} else {
+		vinfo.red.length = vinfo.red.offset = 0;
+		vinfo.green.length = vinfo.green.offset = 0;
+		vinfo.blue.length = vinfo.blue.offset = 0;
+		vinfo.transp.length = vinfo.transp.offset = 0;
+	}
+	
 #ifdef FBCON_DEBUG
         fprintf(stderr, "NEWGAL>FBCON: Printing wanted vinfo:\n");
         print_vinfo(&vinfo);

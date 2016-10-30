@@ -58,8 +58,10 @@ static void* load_font_data (const char* font_name, const char* file_name)
     if ((rbf_info->height = fontGetHeightFromName (font_name)) == -1)
         goto error_load;
 
-    if (!(fp = fopen (file_name, "rb")))
+    if (!(fp = fopen (file_name, "rb"))) {
+	fprintf(stderr,"can't open %s\n",file_name);
         goto error_load;
+    }
 
     data_size = get_opened_file_size (fp);
     rbf_info->data_size = data_size;

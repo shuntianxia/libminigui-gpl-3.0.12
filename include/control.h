@@ -92,6 +92,10 @@ extern "C" {
 #include "ctrl/scrollview.h"
 #endif /* _MGCTRL_SCROLLVIEW */
 
+#ifdef _MGCTRL_WHEELVIEW
+#include "ctrl/wheelview.h"
+#endif /* _MGCTRL_WHEELVIEW */
+
 #ifdef _MGCTRL_SCROLLBAR
 #include "ctrl/scrollbar.h"
 #endif /* _MGCTRL_SCROLLBAR */

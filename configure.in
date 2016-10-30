@@ -782,6 +782,10 @@ AC_ARG_ENABLE(ctrlscrollview,
 [  --enable-ctrlscrollview  include SCROLLVIEW and SCROLLWINDOW controls <default=yes>],
 build_ctrl_scrollview=$enableval)
 
+AC_ARG_ENABLE(ctrlwheelview,
+[  --enable-ctrlwheelview  include WHEELVIEW  <default=yes>],
+build_ctrl_wheelview=$enableval)
+
 AC_ARG_ENABLE(ctrltextedit,
 [  --enable-ctrltextedit    include old TEXTEDIT control implementation <default=no>],
 build_ctrl_textedit=$enableval)
@@ -2335,6 +2339,11 @@ fi
 if test "x$build_ctrl_scrollview" = "xyes"; then
     AC_DEFINE(_MGCTRL_SCROLLVIEW, 1,
             [Define if include SCROLLVIEW control])
+fi
+
+if test "x$build_ctrl_wheelview" = "xyes"; then
+    AC_DEFINE(_MGCTRL_WHEELVIEW, 1,
+            [Define if include WHEELVIEW control])
 fi
 
 if test "x$build_ctrl_textedit" = "xyes"; then
