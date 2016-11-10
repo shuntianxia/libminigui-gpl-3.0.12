@@ -200,6 +200,7 @@ MG_EXPORT PBITMAP iconview_set_item_bitmap(GHANDLE hivi, PBITMAP pbmp);
  */
 #define IVM_ADDITEM            0xF300
 
+#define IVM_ADDITEM_ALINE      0xF342
 /**
  * \def IVM_SETITEMSIZE
  * \brief Sets the item width and height of an iconview control

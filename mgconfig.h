@@ -54,7 +54,7 @@
 #define HAVE_MKTIME 1
 
 /* Define to 1 if you have a working `mmap' system call. */
-#define HAVE_MMAP 1
+/* #undef HAVE_MMAP */
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
@@ -280,7 +280,7 @@
 #define _MGCTRL_COOLBAR 1
 
 /* Define if include GRIDVIEW control */
-/* #undef _MGCTRL_GRIDVIEW */
+#define _MGCTRL_GRIDVIEW 1
 
 /* Define if include ICONVIEW control */
 #define _MGCTRL_ICONVIEW 1
@@ -418,7 +418,7 @@
 #define _MGGAL_PCXVFB 1
 
 /* Define if include Qt Virtual FrameBuffer NEWGAL engine */
-/* #undef _MGGAL_QVFB */
+#define _MGGAL_QVFB 1
 
 /* Define if include RTOS Virtual FrameBuffer NEWGAL engine */
 /* #undef _MGGAL_RTOSXVFB */
@@ -529,7 +529,7 @@
 /* #undef _MGIAL_QEMU */
 
 /* Define if include the QVFB IAL engine */
-/* #undef _MGIAL_QVFB */
+#define _MGIAL_QVFB 1
 
 /* Define if include the random IAL engine */
 /* #undef _MGIAL_RANDOM */

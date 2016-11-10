@@ -191,6 +191,29 @@ HITEM iconview_add_item_ex (HWND hWnd, IconviewData* pivdata, HITEM prehivi,
     return (HITEM)pci;
 }
 
+HITEM iconview_add_item_aline (HWND hWnd, IconviewData* pivdata, HITEM prehivi,
+                         PIVITEMINFO pii, int *idx)
+{
+    IconviewList* pivlist = &pivdata->ivlist;
+    IconviewItem* pci;
+    int index;
+
+    if ((pci = 
+        ivlistItemAdd (pivlist, (IconviewItem*)prehivi, NULL, pii, &index))) {
+        pivlist->nCol = mglist_get_item_count((MgList *)pivlist) ;
+
+        scrolled_set_cont_width (hWnd, pivscr, 
+                pivlist->nCol * pivdata->ivlist.nItemWidth);
+        pivlist->mglist.nTotalItemH = pivlist->nItemHeight;
+        scrolled_refresh_content (pivscr);
+    }
+
+    if (idx)
+        *idx = index;
+
+    return (HITEM)pci;
+}
+
 int iconview_move_item (IconviewData* pivdata, HITEM hivi, HITEM prehivi)
 {
     if (!hivi)
@@ -620,6 +643,17 @@ IconViewCtrlProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam)
         HITEM hivi;
 
         hivi = iconview_add_item (hWnd, pivdata, 0, (PIVITEMINFO)lParam, &idx);
+        if (wParam)
+            *(HITEM *)wParam = hivi;
+        return hivi?idx:-1;
+    }
+
+    case IVM_ADDITEM_ALINE:
+    {
+        int idx;
+        HITEM hivi;
+
+        hivi = iconview_add_item_aline(hWnd, pivdata, 0, (PIVITEMINFO)lParam, &idx);
         if (wParam)
             *(HITEM *)wParam = hivi;
         return hivi?idx:-1;

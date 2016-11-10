@@ -55,7 +55,9 @@ typedef struct _scrdata
     /* added by learningx */
     SlidController *controller;
     SlidView  view;
-        
+
+	int lbutton_pressed;
+	POINT mouse_pos;
 
 } SCRDATA;
 typedef SCRDATA *PSCRDATA;

@@ -547,6 +547,59 @@ int scrolled_init (HWND hWnd, PSCRDATA pscrdata, int w, int h)
     return 0;
 }
 
+static void svScroll_mouse (HWND hWnd, PSCRDATA pscrdata, int mouse_x, int mouse_y)
+{
+    int scrollBoundMax_x;
+	int scrollBoundMax_y;
+    int scrollBoundMin;
+    int scroll_x = 0;
+	int scroll_y = 0;
+    BOOL bScroll = FALSE;
+    int nOffset_x;
+	int nOffset_y;
+    
+    scrollBoundMax_x = pscrdata->nContWidth - pscrdata->visibleWidth;
+    nOffset_x = pscrdata->nContX;
+    scrollBoundMax_y = pscrdata->nContHeight - pscrdata->visibleHeight;
+    nOffset_y = pscrdata->nContY;
+    scrollBoundMin = 0;
+
+	scroll_x = pscrdata->mouse_pos.x - mouse_x;
+	scroll_y = pscrdata->mouse_pos.y - mouse_y;
+
+	if (scroll_x > 0 && nOffset_x < scrollBoundMax_x) {
+        if ((nOffset_x + scroll_x) > scrollBoundMax_x)
+            nOffset_x = scrollBoundMax_x;
+        else
+            nOffset_x += scroll_x;
+        bScroll = TRUE;
+	}
+    else if ( scroll_x < 0 && nOffset_x > scrollBoundMin) {
+        if ((nOffset_x + scroll_x) < scrollBoundMin)
+            nOffset_x = scrollBoundMin;
+        else
+            nOffset_x += scroll_x;
+        bScroll = TRUE;
+    }
+	if (scroll_y > 0 && nOffset_y < scrollBoundMax_y) {
+        if ((nOffset_y + scroll_y) > scrollBoundMax_y)
+            nOffset_y = scrollBoundMax_y;
+        else
+            nOffset_y += scroll_y;
+        bScroll = TRUE;
+	}
+    else if ( scroll_y < 0 && nOffset_y > scrollBoundMin) {
+        if ((nOffset_y + scroll_y) < scrollBoundMin)
+            nOffset_y = scrollBoundMin;
+        else
+            nOffset_y += scroll_y;
+        bScroll = TRUE;
+    }
+    if (bScroll) {
+        scrolled_set_cont_pos (hWnd, pscrdata, nOffset_x, nOffset_y);
+    }
+}
+
 int DefaultScrolledProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam)
 {
     PSCRDATA pscrdata = NULL;
@@ -679,6 +732,41 @@ int DefaultScrolledProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam)
     case SVM_MAKEPOSVISIBLE:
         scrolled_make_pos_visible (hWnd, pscrdata, wParam, lParam);
         return 0;
+
+	case MSG_LBUTTONDOWN:
+	{
+		SetCapture(hWnd);
+		pscrdata->lbutton_pressed = 1;
+		int x_pos = LOSWORD (lParam);
+		int y_pos = HISWORD (lParam);
+		pscrdata->mouse_pos.x = x_pos ;
+		pscrdata->mouse_pos.y = y_pos ;
+		break;
+	}
+		
+	case MSG_LBUTTONUP:
+	{
+		ReleaseCapture();
+		pscrdata->lbutton_pressed = 0;
+		break;
+	}
+
+	case MSG_MOUSEMOVEIN:
+		//pscrdata->lbutton_pressed = 0;
+		break;
+		
+	case MSG_MOUSEMOVE:
+	{
+		int x_pos = LOSWORD (lParam);
+		int y_pos = HISWORD (lParam);
+		if(GetCapture() == hWnd && pscrdata->lbutton_pressed == 1) {
+			ScreenToClient (hWnd, &x_pos, &y_pos);
+			svScroll_mouse(hWnd, pscrdata, x_pos, y_pos);
+			pscrdata->mouse_pos.x = x_pos;
+			pscrdata->mouse_pos.y = y_pos;
+		}
+		break;
+	}
 
     }/* end switch */
 
