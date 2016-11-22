@@ -370,6 +370,7 @@ void mglist_set_itemops (MgList *mglst, PMGITEMOPS iop)
 int DefaultItemViewProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam, 
                          PSCRDATA pscrdata, MgList *mglst)
 {
+	static int nContX, nContY;
     switch (message) {
 
     case MSG_RBUTTONDOWN:
@@ -383,6 +384,8 @@ int DefaultItemViewProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam,
 
         if ( !mglst->iop.isInItem )
             break;
+        nContX = pscrdata->nContX;
+        nContY = pscrdata->nContY;
         scrolled_get_visible_rect (pscrdata, &rcVis);
         /* not in the visible area */
         if (!PtInRect (&rcVis, mouseX, mouseY))
@@ -399,6 +402,33 @@ int DefaultItemViewProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam,
 
             /* FIXME: should we auto-select the item? */
             //mglist_select_item (mglst, hitem, TRUE);
+        }
+
+        break;
+    }
+
+    case MSG_RBUTTONUP:
+    case MSG_LBUTTONUP:
+    {
+        int mouseY = HISWORD (lParam);
+        int mouseX = LOSWORD (lParam);
+        int nItem;
+        RECT rcVis;
+        MgItem *hitem;
+
+		ScreenToClient (hWnd, &mouseX, &mouseY);
+        if ( !mglst->iop.isInItem )
+            break;
+        scrolled_get_visible_rect (pscrdata, &rcVis);
+        /* not in the visible area */
+        if (!PtInRect (&rcVis, mouseX, mouseY))
+            break;
+        scrolled_window_to_content (pscrdata, &mouseX, &mouseY);
+        if ( (nItem = mglst->iop.isInItem(mglst, mouseX, mouseY, &hitem, NULL)) >= 0 \
+        		&& mglist_is_item_hilight(mglst, hitem)) {
+            if ( (GetWindowStyle(hWnd) & SVS_UPNOTIFY) && (nContX == pscrdata->nContX) \
+            && (nContY == pscrdata->nContY))
+                NotifyParentEx (hWnd, GetDlgCtrlID(hWnd), SVN_CLICKED, (DWORD)hitem);
         }
 
         break;
