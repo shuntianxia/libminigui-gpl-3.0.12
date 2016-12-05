@@ -87,6 +87,60 @@ static void TrackBarOnDraw (HWND hwnd, HDC hdc, TRACKBARDATA* pData, DWORD dwSty
     }
 }
 
+static void
+calc_trackbar_rect (HWND hWnd, TRACKBARDATA *pData, DWORD dwStyle,
+        const RECT* rcClient, RECT* rcRuler, RECT* rcBar, RECT* rcBorder)
+{
+    int     x, y, w, h;
+    int     pos, min, max;
+    int     sliderx, slidery, sliderw, sliderh;
+    const BITMAP *ruler_bmp = NULL, *hthumb_bmp = NULL;
+
+    x = rcClient->left;
+    y = rcClient->top;
+    w = RECTWP (rcClient);
+    h = RECTHP (rcClient);
+
+    pos = pData->nPos;
+    max = pData->nMax;
+    min = pData->nMin;
+
+    if (!rcRuler && !rcBar)
+        return;
+	ruler_bmp = pData->pic[0];
+	hthumb_bmp= pData->pic[2];
+	
+    /* Calculate ruler rect. */
+    if (rcRuler) {
+        rcRuler->left   = x;
+        rcRuler->top    = y + ((h - ruler_bmp->bmHeight)>>1);
+        rcRuler->right  = x + w;
+        rcRuler->bottom = y + ((h + ruler_bmp->bmHeight)>>1);
+    }
+
+    if (rcBar) {
+        sliderw = hthumb_bmp->bmWidth;
+        sliderh = hthumb_bmp->bmHeight;
+        slidery = y + ((h - sliderh) >> 1);
+        sliderx = x + (int)(pos - min) * (w - sliderw) / (max - min);
+        SetRect (rcBar, sliderx, slidery, sliderx + sliderw, slidery + sliderh);
+    }
+}
+
+static void TrackBarOnDraw_Pic (HWND hWnd, HDC hdc, TRACKBARDATA* pData, DWORD dwStyle)
+{
+    RECT    rc_client, rc_border, rc_ruler, rc_bar;
+
+    dwStyle = GetWindowStyle (hWnd);
+    GetClientRect (hWnd, &rc_client);
+    calc_trackbar_rect (hWnd, pData, dwStyle, &rc_client,
+            &rc_ruler, &rc_bar, &rc_border);
+
+    FillBoxWithBitmap(hdc, rc_ruler.left,rc_ruler.top,RECTW(rc_ruler),RECTH(rc_ruler),pData->pic[0]);
+    FillBoxWithBitmap(hdc, rc_ruler.left,rc_ruler.top, rc_bar.left - rc_ruler.left + (RECTW(rc_bar) >> 1),RECTH(rc_ruler),pData->pic[1]);
+    FillBoxWithBitmap(hdc, rc_bar.left,rc_bar.top,RECTW(rc_bar),RECTH(rc_bar),pData->pic[2]);
+}
+
 static void TrackBarNormalizeParams (const CONTROL* pCtrl, TRACKBARDATA* pData, BOOL fNotify)
 {
     if (pData->nPos >= pData->nMax) {
@@ -125,14 +179,24 @@ static void SetSliderPos (const CONTROL* pCtrl, int new_pos)
 
     GetClientRect ((HWND)pCtrl, &rc_client);
 
-    pCtrl->we_rdr->calc_trackbar_rect ((HWND)pCtrl, (LFRDR_TRACKBARINFO *)pData, 
-                        pCtrl->dwStyle, &rc_client, NULL, &old_slider, NULL);
+	if(pCtrl->dwStyle & TBS_USEPIC) {
+		calc_trackbar_rect ((HWND)pCtrl, (LFRDR_TRACKBARINFO *)pData, 
+								pCtrl->dwStyle, &rc_client, NULL, &old_slider, NULL);
+	} else {
+	    pCtrl->we_rdr->calc_trackbar_rect ((HWND)pCtrl, (LFRDR_TRACKBARINFO *)pData, 
+	                        pCtrl->dwStyle, &rc_client, NULL, &old_slider, NULL);
+    }
 
     pData->nPos = new_pos;
     TrackBarNormalizeParams (pCtrl, pData, pCtrl->dwStyle & TBS_NOTIFY);
 
-    pCtrl->we_rdr->calc_trackbar_rect ((HWND)pCtrl, (LFRDR_TRACKBARINFO *)pData, 
-                        pCtrl->dwStyle, &rc_client, NULL, &new_slider, NULL);
+	if(pCtrl->dwStyle & TBS_USEPIC) {
+		calc_trackbar_rect ((HWND)pCtrl, (LFRDR_TRACKBARINFO *)pData, 
+								pCtrl->dwStyle, &rc_client, NULL, &new_slider, NULL);
+	} else {
+	    pCtrl->we_rdr->calc_trackbar_rect ((HWND)pCtrl, (LFRDR_TRACKBARINFO *)pData, 
+	                        pCtrl->dwStyle, &rc_client, NULL, &new_slider, NULL);
+    }
 
     if (pCtrl->dwStyle & TBS_TIP) {
         InvalidateRect ((HWND)pCtrl, NULL, TRUE);
@@ -158,8 +222,13 @@ static int NormalizeMousePos (HWND hwnd, TRACKBARDATA* pData, int mousepos)
     dwStyle = GetWindowStyle (hwnd);
     win_rdr = GetWindowInfo(hwnd)->we_rdr;
 
-    win_rdr->calc_trackbar_rect (hwnd, (LFRDR_TRACKBARINFO *)pData, 
-                        dwStyle, &rcClient, NULL, &rcBar, NULL);
+	if(dwStyle & TBS_USEPIC) {
+		calc_trackbar_rect (hwnd, (LFRDR_TRACKBARINFO *)pData, 
+								dwStyle, &rcClient, NULL, &rcBar, NULL);
+	} else {
+	    win_rdr->calc_trackbar_rect (hwnd, (LFRDR_TRACKBARINFO *)pData, 
+	                        dwStyle, &rcClient, NULL, &rcBar, NULL);
+    }
 
     if (dwStyle & TBS_VERTICAL) {
         int blank =  RECTH (rcBar)>>1;
@@ -226,7 +295,11 @@ static int TrackBarCtrlProc (HWND hwnd, int message, WPARAM wParam, LPARAM lPara
             HDC hdc;
 
             hdc = BeginPaint (hwnd);
-            TrackBarOnDraw (hwnd, hdc, (TRACKBARDATA *)pCtrl->dwAddData2, pCtrl->dwStyle);
+            if(pCtrl->dwStyle & TBS_USEPIC) {
+				TrackBarOnDraw_Pic (hwnd, hdc, (TRACKBARDATA *)pCtrl->dwAddData2, pCtrl->dwStyle);
+            } else {
+            	TrackBarOnDraw (hwnd, hdc, (TRACKBARDATA *)pCtrl->dwAddData2, pCtrl->dwStyle);
+            }
             EndPaint (hwnd, hdc);
             return 0;
         }
@@ -341,7 +414,17 @@ static int TrackBarCtrlProc (HWND hwnd, int message, WPARAM wParam, LPARAM lPara
             if (lParam)
                 strcpy ((char *) lParam, pData->sEndTip);
             return 0;
-        
+
+        case TBM_SETPIC:
+        {
+        	PBITMAP *pSetData = (PBITMAP)wParam;
+            pData = (TRACKBARDATA *)pCtrl->dwAddData2;
+            pData->pic[0] = pSetData[0];
+            pData->pic[1] = pSetData[1];
+			pData->pic[2] = pSetData[2];            
+            return 0;
+        }
+            
         case MSG_SETFOCUS:
             if (pCtrl->dwStyle & TBS_FOCUS)
                 break;
@@ -439,8 +522,13 @@ static int TrackBarCtrlProc (HWND hwnd, int message, WPARAM wParam, LPARAM lPara
             pData = (TRACKBARDATA *)pCtrl->dwAddData2;
 
             GetClientRect (hwnd, &rc_client);
-            pCtrl->we_rdr->calc_trackbar_rect (hwnd, (LFRDR_TRACKBARINFO *)pData, 
-                                pCtrl->dwStyle, &rc_client, NULL, &rc_slider, NULL);
+            if(pCtrl->dwStyle & TBS_USEPIC) {
+				calc_trackbar_rect (hwnd, (LFRDR_TRACKBARINFO *)pData, 
+												pCtrl->dwStyle, &rc_client, NULL, &rc_slider, NULL);
+            } else {
+	            pCtrl->we_rdr->calc_trackbar_rect (hwnd, (LFRDR_TRACKBARINFO *)pData, 
+	                                pCtrl->dwStyle, &rc_client, NULL, &rc_slider, NULL);
+            }
 
             if (GetCapture() == hwnd)
             {

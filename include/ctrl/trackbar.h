@@ -92,6 +92,8 @@ extern "C" {
  */
 #define TBS_NOTICK                 0x0010L
 
+#define TBS_USEPIC                 0x0020L
+
 /* internally used style */
 #define TBS_FOCUS                  0x1000L
 
@@ -385,7 +387,8 @@ extern "C" {
  */
 #define TBM_GETMAX                 0xF09F
 
-#define TBR_MSGMAX                 0xF010
+#define TBM_SETPIC                 0xF010
+#define TBR_MSGMAX                 0xF011
 
     /** @} end of ctrl_trackbar_msgs */
 

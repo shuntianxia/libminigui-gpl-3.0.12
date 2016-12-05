@@ -29,6 +29,7 @@ typedef  struct tagTRACKBARDATA
     int nPageSize;
     char sStartTip [TBLEN_TIP + 1];
     char sEndTip [TBLEN_TIP + 1];
+    PBITMAP pic[3];
 }TRACKBARDATA;
 typedef TRACKBARDATA* PTRACKBARDATA;
 
