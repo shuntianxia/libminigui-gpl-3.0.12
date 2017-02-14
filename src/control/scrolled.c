@@ -30,6 +30,7 @@
 #include "ctrlclass.h"
 
 #include "scrolled.h"
+#include "mspeedmeter.h"
 
 
 #define SV_H_OUTRANGE() \
@@ -567,47 +568,66 @@ static void svScroll_mouse (HWND hWnd, PSCRDATA pscrdata, int mouse_x, int mouse
 	scroll_x = pscrdata->mouse_pos.x - mouse_x;
 	scroll_y = pscrdata->mouse_pos.y - mouse_y;
 
+	if(abs(scroll_x) < 8 && abs(scroll_y) < 8) {
+		return;
+	}
+	pscrdata->mouse_pos.x = mouse_x;
+	pscrdata->mouse_pos.y = mouse_y;
+
 	if (scroll_x > 0 && nOffset_x < scrollBoundMax_x) {
-        if ((nOffset_x + scroll_x) > scrollBoundMax_x)
+        if ((nOffset_x += scroll_x) > scrollBoundMax_x)
             nOffset_x = scrollBoundMax_x;
-        else
-            nOffset_x += scroll_x;
         bScroll = TRUE;
 	}
     else if ( scroll_x < 0 && nOffset_x > scrollBoundMin) {
-        if ((nOffset_x + scroll_x) < scrollBoundMin)
+        if ((nOffset_x += scroll_x) < scrollBoundMin)
             nOffset_x = scrollBoundMin;
-        else
-            nOffset_x += scroll_x;
         bScroll = TRUE;
     }
 	if (scroll_y > 0 && nOffset_y < scrollBoundMax_y) {
-        if ((nOffset_y + scroll_y) > scrollBoundMax_y)
+        if ((nOffset_y += scroll_y) > scrollBoundMax_y)
             nOffset_y = scrollBoundMax_y;
-        else
-            nOffset_y += scroll_y;
         bScroll = TRUE;
 	}
     else if ( scroll_y < 0 && nOffset_y > scrollBoundMin) {
-        if ((nOffset_y + scroll_y) < scrollBoundMin)
+        if ((nOffset_y += scroll_y) < scrollBoundMin)
             nOffset_y = scrollBoundMin;
-        else
-            nOffset_y += scroll_y;
         bScroll = TRUE;
     }
     if (bScroll) {
         scrolled_set_cont_pos (hWnd, pscrdata, nOffset_x, nOffset_y);
+        pscrdata->bScroll = TRUE;
     }
+}
+
+static void animationCallback (MGEFF_ANIMATION handle, void* target, int id, POINT *p)
+{
+	PSCRDATA pscrdata = (PSCRDATA) GetWindowAdditionalData2 ((HWND)target);
+
+	scrolled_set_cont_pos ((HWND)target, pscrdata, p->x, p->y);
+}
+
+static void animationFinishedCallback (MGEFF_ANIMATION handle)
+{
+	HWND hWnd = (HWND)mGEffAnimationGetTarget(handle);
+	PSCRDATA pscrdata = (PSCRDATA) GetWindowAdditionalData2 (hWnd);
+	pscrdata->bInertia = FALSE;
 }
 
 int DefaultScrolledProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam)
 {
     PSCRDATA pscrdata = NULL;
 
-    if (message != MSG_CREATE)
+    //if (message != MSG_CREATE)
         pscrdata = (PSCRDATA) GetWindowAdditionalData2 (hWnd);
 
     switch (message) {
+    case MSG_CREATE:
+    	mGEffInit();
+    	pscrdata->s_speedmeter = mSpeedMeter_create(1000, 10);
+    	pscrdata->animation = mGEffAnimationCreate ((void *) hWnd, animationCallback, 0, MGEFF_POINT);
+    	mGEffAnimationSetFinishedCb(pscrdata->animation, animationFinishedCallback);
+    	break;
 
     case MSG_HSCROLL:
         scrolled_hscroll (hWnd, pscrdata, wParam, lParam);
@@ -736,37 +756,83 @@ int DefaultScrolledProc (HWND hWnd, int message, WPARAM wParam, LPARAM lParam)
 	case MSG_LBUTTONDOWN:
 	{
 		SetCapture(hWnd);
-		pscrdata->lbutton_pressed = 1;
-		int x_pos = LOSWORD (lParam);
-		int y_pos = HISWORD (lParam);
-		pscrdata->mouse_pos.x = x_pos ;
-		pscrdata->mouse_pos.y = y_pos ;
+		int x = LOSWORD (lParam);
+		int y = HISWORD (lParam);
+	    //pscrdata->s_pressed = TRUE;
+        if (!pscrdata->s_speedmeter){
+            pscrdata->s_speedmeter = mSpeedMeter_create(1000, 10);
+        }
+        mSpeedMeter_reset(pscrdata->s_speedmeter);
+        mSpeedMeter_append(pscrdata->s_speedmeter, x, y, GetTickCount() * 10);
+		pscrdata->mouse_pos.x = x;
+		pscrdata->mouse_pos.y = y;
+		pscrdata->bScroll = FALSE;
+		if(pscrdata->bInertia) {
+			mGEffAnimationStop (pscrdata->animation);
+			pscrdata->bInertia = TRUE;
+		}
 		break;
 	}
 		
 	case MSG_LBUTTONUP:
 	{
+		float v_x = 0;
+		float v_y = 0;
+		int x = LOSWORD (lParam);
+		int y = HISWORD (lParam);
+		ScreenToClient (hWnd, &x, &y);
+	    if (pscrdata->s_speedmeter) {
+            mSpeedMeter_append(pscrdata->s_speedmeter, x, y, GetTickCount() * 10);
+            mSpeedMeter_stop(pscrdata->s_speedmeter);
+        }else{
+            fprintf(stderr, "[WARNING speedmeter]: MSG_LBUTTONUP, speedmeter=NULL\n");
+        }
+        //pscrdata->s_pressed = FALSE;
+		if(GetCapture() == hWnd && pscrdata->bScroll) {
+            mSpeedMeter_velocity(pscrdata->s_speedmeter, &v_x, &v_y);
+            //printf("v_x=%f,v_y=%f\n", v_x, v_y);
+            POINT point_start, point_end;
+            point_start.x = pscrdata->nContX;
+            point_start.y = pscrdata->nContY;
+            //printf("point_start.x %d, point_start.y %d\n", point_start.x, point_start.y);
+            point_end.x = point_start.x - v_x*1000;
+            point_end.y = point_start.y - v_y*1000;
+            //printf("point_end.x %d, point_end.y %d\n", point_end.x, point_end.y);
+            if (pscrdata->animation) {
+	            mGEffAnimationSetStartValue (pscrdata->animation, &point_start);
+			    mGEffAnimationSetEndValue (pscrdata->animation, &point_end);
+			    mGEffAnimationSetDuration (pscrdata->animation, 2000);    
+			    mGEffAnimationAsyncRun (pscrdata->animation);
+    		}
+    		pscrdata->bInertia = TRUE;
+		} else {
+			pscrdata->bInertia = FALSE;
+		}
 		ReleaseCapture();
-		pscrdata->lbutton_pressed = 0;
 		break;
 	}
-
-	case MSG_MOUSEMOVEIN:
-		//pscrdata->lbutton_pressed = 0;
-		break;
 		
 	case MSG_MOUSEMOVE:
 	{
-		int x_pos = LOSWORD (lParam);
-		int y_pos = HISWORD (lParam);
-		if(GetCapture() == hWnd && pscrdata->lbutton_pressed == 1) {
-			ScreenToClient (hWnd, &x_pos, &y_pos);
-			svScroll_mouse(hWnd, pscrdata, x_pos, y_pos);
-			pscrdata->mouse_pos.x = x_pos;
-			pscrdata->mouse_pos.y = y_pos;
+		int x = LOSWORD (lParam);
+		int y = HISWORD (lParam);
+		ScreenToClient (hWnd, &x, &y);
+		if(GetCapture() == hWnd /*&& pscrdata->s_pressed*/) {
+			if (pscrdata->s_speedmeter) {
+	            mSpeedMeter_append(pscrdata->s_speedmeter, x, y, GetTickCount() * 10);
+	        }else{
+	            fprintf(stderr, "[WARNING speedmeter]: MSG_MOUSEMOVE, pressed, but speedmeter=NULL\n");
+	        }
+			svScroll_mouse(hWnd, pscrdata, x, y);
 		}
 		break;
 	}
+
+	case MSG_DESTROY:
+		mGEffAnimationDelete (pscrdata->animation);
+		mSpeedMeter_destroy(pscrdata->s_speedmeter);
+        pscrdata->s_speedmeter = NULL;
+		break;
 
     }/* end switch */
 

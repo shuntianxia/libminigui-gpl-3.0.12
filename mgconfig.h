@@ -280,7 +280,7 @@
 #define _MGCTRL_COOLBAR 1
 
 /* Define if include GRIDVIEW control */
-#define _MGCTRL_GRIDVIEW 1
+/* #undef _MGCTRL_GRIDVIEW */
 
 /* Define if include ICONVIEW control */
 #define _MGCTRL_ICONVIEW 1
@@ -340,7 +340,7 @@
 #define _MGFONT_BMPF 1
 
 /* Define if support TrueType font based on FreeType2 */
-/* #undef _MGFONT_FT2 */
+#define _MGFONT_FT2 1
 
 /* Define if support QPF font */
 /* #undef _MGFONT_QPF */

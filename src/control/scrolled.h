@@ -56,9 +56,11 @@ typedef struct _scrdata
     SlidController *controller;
     SlidView  view;
 
-	int lbutton_pressed;
 	POINT mouse_pos;
-
+	MGEFF_ANIMATION animation;
+	SPEEDMETER s_speedmeter;
+	BOOL bScroll;
+	BOOL bInertia;
 } SCRDATA;
 typedef SCRDATA *PSCRDATA;
 

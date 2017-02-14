@@ -230,28 +230,15 @@ BOOL SpeedMeterMessageHandler(mWidget *notused, int message, int x, int y, DWORD
     return 0;
 }
 
-static POINT GetWindowLeftPoint(HWND hwnd)
-{
-    const WINDOWINFO* win_info = GetWindowInfo(hwnd);
-    POINT pt;
-    pt.x = win_info->left;
-    pt.y = win_info->top;
-    return pt;
-}
-
 int SpeedMeterProc(HWND hWnd, int message, WPARAM wParam, LPARAM lParam){
-    POINT pt = GetWindowLeftPoint(hWnd);
     switch (message) {
         case MSG_MOUSEMOVE:
-        case MSG_LBUTTONUP:
-            SpeedMeterMessageHandler(NULL, message, LOSWORD(lParam)-pt.x, HISWORD(lParam)-pt.y, (DWORD)wParam);
-            break;
         case MSG_LBUTTONDOWN:
+        case MSG_LBUTTONUP:
             SpeedMeterMessageHandler(NULL, message, LOSWORD(lParam), HISWORD(lParam), (DWORD)wParam);
             break;
         case MSG_DESTROY:
-            if(s_speedmeter != NULL)
-                mSpeedMeter_destroy(s_speedmeter);
+            mSpeedMeter_destroy(s_speedmeter);
             s_speedmeter = NULL;
             s_pressed = FALSE;
             break;
